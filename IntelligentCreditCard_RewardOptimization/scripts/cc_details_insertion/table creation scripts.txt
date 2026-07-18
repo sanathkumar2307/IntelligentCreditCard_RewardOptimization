@@ -1,0 +1,60 @@
+CREATE TABLE tbl_document_details (
+    id SERIAL PRIMARY KEY,
+    document_id VARCHAR(100) NOT NULL UNIQUE,
+    card_name VARCHAR(150) NOT NULL,
+    card_issuer_bank VARCHAR(150) NOT NULL,
+    document_type VARCHAR(50) NOT NULL, -- e.g., 'PDF', 'TXT'
+    effective_date DATE NOT NULL,
+    source_url TEXT,
+    uploaded_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexing Document ID since you will likely use it as a foreign key or lookup filter
+CREATE INDEX idx_cc_docs_document_id ON tbl_document_details(document_id);
+
+
+CREATE EXTENSION IF NOT EXISTS vector;
+
+-- Now you can create your table with the vector column type
+CREATE TABLE cc_reward_chunks (
+    id SERIAL PRIMARY KEY,
+    document_id TEXT,
+    card_name TEXT,
+    issuer TEXT,
+    document_type TEXT,
+    chunk_text TEXT,
+    page_number INT,
+    effective_date DATE,
+    source_url TEXT,
+    embedding vector(768)
+);
+
+
+CREATE TABLE tbl_reward_rules (
+    rule_id SERIAL PRIMARY KEY,
+    card_name VARCHAR(255),
+    spend_category VARCHAR(100),
+    reward_type VARCHAR(100),      -- e.g., Cashback, Points, Miles
+    reward_rate NUMERIC(10, 2),     -- e.g., 5.00, 1.50
+    reward_unit VARCHAR(50),       -- e.g., %, Multiplier, Fixed
+    cap_type VARCHAR(100),         -- e.g., Monthly, Quarterly, None
+    cap_value NUMERIC(12, 2),      -- Numerical capping limit
+    exclusion_flag BOOLEAN,        -- True if it specifies what DOES NOT earn rewards
+    milestone_condition TEXT,      -- Details about milestone spend targets if any
+    source_document_id INT,        -- Links back to document_id in cc_reward_chunks
+    confidence_score NUMERIC(3, 2) -- LLM self-reported score between 0.00 and 1.00
+);
+
+
+CREATE TABLE tbl_transfer_partners (
+    partner_id SERIAL PRIMARY KEY,
+    card_name VARCHAR(255),
+    partner_name VARCHAR(255),
+    partner_type VARCHAR(100),              -- e.g., Airline, Hotel
+    transfer_ratio VARCHAR(50),             -- e.g., 1:1, 4:5, 1:2
+    minimum_transfer_points INT,            -- Minimum limit per transaction
+    maximum_transfer_points INT,            -- Maximum limit if any, otherwise null
+    effective_date DATE,                    -- Date if mentioned, otherwise default current
+    source_chunk_id VARCHAR(100),           -- Links back to your raw text chunk row
+    confidence_score NUMERIC(3, 2)
+);

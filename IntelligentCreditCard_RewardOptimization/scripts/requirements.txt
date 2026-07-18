@@ -1,0 +1,55 @@
+# --- Base & Networking ---
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+urllib3>=2.0.0
+
+# --- Core RAG & Text Processing ---
+langchain>=0.1.0
+langchain-community>=0.0.10
+pdfplumber>=0.10.3
+pymupdf>=1.23.0
+tiktoken>=0.5.0
+
+# --- Database & Vector Storage ---
+psycopg2-binary>=2.9.9
+sqlalchemy>=2.0.0
+pgvector>=0.2.4
+
+# --- LLM Providers & Embeddings ---
+openai>=1.10.0
+google-generativeai>=0.3.0
+
+# --- Frontend User Interface ---
+streamlit>=1.30.0
+
+# --- Environment & Utils ---
+python-dotenv>=1.0.0
+
+# --- Base & Web Scraping Utilities ---
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+
+# --- Core LLM & Validation Frameworks ---
+
+pydantic>=2.0.0
+
+# Web Framework for Cloud Run Hosting
+Flask==3.0.3
+
+# Google Cloud Platform Core & Storage Client Libraries
+google-cloud-storage==2.17.0
+google-auth>=2.30.0
+
+# Document AI Client Library (Used for Layout Parser Extraction)
+google-cloud-documentai==2.29.3
+
+# Vertex AI SDK (Handles text-embedding-004 connection APIs)
+google-cloud-aiplatform==1.56.0
+
+# Advanced Text Chunking & Structural Layout Splitting
+langchain-text-splitters==0.2.1
+
+# PostgreSQL Database Driver (Native Python interface for pgvector interaction)
+psycopg2-binary==2.9.9
+
+
