@@ -1,6 +1,7 @@
 import streamlit as st
 from rag_retrieval_langchain import final_chain
 import time
+import traceback
 
 # Page configuration
 st.set_page_config(
@@ -95,6 +96,8 @@ if user_input:
                 })
                 
         except Exception as e:
+            # Emit full traceback to server logs (Cloud Run) for debugging.
+            traceback.print_exc()
             error_message = f"⚠️ An error occurred: {str(e)}"
             message_placeholder.markdown(error_message)
             st.session_state.messages.append({
