@@ -28,6 +28,8 @@ steps:
       - ${_REGION}
       - --service-account
       - ${_RUNTIME_SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+      - --set-secrets
+      - OPENAI_API_KEY=${_OPENAI_SECRET}:latest
       - --platform
       - managed
       - --allow-unauthenticated
@@ -42,6 +44,7 @@ substitutions:
   _REPO_NAME: my-streamlit-repo
   _IMAGE_TAG: latest
   _RUNTIME_SA_NAME: cloud-run-rag-sa
+  _OPENAI_SECRET: OPENAI_API_KEY
 
 options:
   logging: CLOUD_LOGGING_ONLY

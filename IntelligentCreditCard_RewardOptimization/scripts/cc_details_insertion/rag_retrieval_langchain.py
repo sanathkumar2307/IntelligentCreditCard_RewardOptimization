@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 from rag_retrieval import get_matching_chunks,generate_query_embedding
 from langchain_openai import ChatOpenAI
@@ -6,7 +7,19 @@ from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_core.runnables import RunnableLambda
 from langchain_core.output_parsers import StrOutputParser
 
-# Load environment variables
+# Load environment variables from common local paths.
+_HERE = Path(__file__).resolve()
+_DOTENV_CANDIDATES = [
+    _HERE.parents[1] / ".env",  # scripts/.env
+    _HERE.parents[2] / ".env",  # repo root .env
+]
+
+for _env_path in _DOTENV_CANDIDATES:
+    if _env_path.exists():
+        load_dotenv(_env_path)
+        break
+
+# Also load default dotenv search path for compatibility.
 load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
