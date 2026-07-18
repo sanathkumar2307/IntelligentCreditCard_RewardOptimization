@@ -3,9 +3,11 @@ steps:
   - name: gcr.io/cloud-builders/docker
     args:
       - build
+      - -f
+      - ${_APP_DIR}/Dockerfile
       - -t
       - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${_IMAGE_TAG}
-      - .
+      - ${_APP_DIR}
 
   # Step 2: Push the image to Artifact Registry
   - name: gcr.io/cloud-builders/docker
@@ -34,6 +36,7 @@ images:
   - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${_IMAGE_TAG}
 
 substitutions:
+  _APP_DIR: IntelligentCreditCard_RewardOptimization
   _SERVICE_NAME: credit-card-rag-app
   _REGION: us-central1
   _REPO_NAME: my-streamlit-repo
