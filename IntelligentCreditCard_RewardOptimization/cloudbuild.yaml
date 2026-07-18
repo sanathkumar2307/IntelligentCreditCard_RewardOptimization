@@ -39,7 +39,7 @@ images:
 
 substitutions:
   _APP_DIR: IntelligentCreditCard_RewardOptimization
-  _SERVICE_NAME: credit-card-rag-app
+  _SERVICE_NAME: streamlit-app
   _REGION: us-central1
   _REPO_NAME: my-streamlit-repo
   _IMAGE_TAG: latest
