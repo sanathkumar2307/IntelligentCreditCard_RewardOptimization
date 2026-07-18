@@ -35,29 +35,3 @@
 
 # options:
 #   logging: CLOUD_LOGGING_ONLY
-
-
-steps:
-  # Step 1: Build the Docker image
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}', '.']
-
-  # Step 2: Push the image to Artifact Registry
-  - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}']
-
-  # Step 3: Deploy to Cloud Run
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'run'
-      - 'deploy'
-      - '${_SERVICE_NAME}'
-      - '--image'
-      - '${_LOCATION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}'
-      - '--region'
-      - '${_LOCATION}'
-      - '--allow-unauthenticated' # Makes the web app publicly visible
-
-options:
-  logging: CLOUD_LOGGING
