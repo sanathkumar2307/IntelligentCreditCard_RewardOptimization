@@ -1,16 +1,19 @@
 steps:
+  # Step 1: Build the Docker image
   - name: gcr.io/cloud-builders/docker
     args:
       - build
       - -t
-      - ${_IMAGE_URI}
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}
       - .
 
+  # Step 2: Push the image to Artifact Registry
   - name: gcr.io/cloud-builders/docker
     args:
       - push
-      - ${_IMAGE_URI}
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}
 
+  # Step 3: Deploy to Cloud Run
   - name: gcr.io/google.com/cloudsdktool/cloud-sdk
     entrypoint: gcloud
     args:
@@ -18,7 +21,7 @@ steps:
       - deploy
       - ${_SERVICE_NAME}
       - --image
-      - ${_IMAGE_URI}
+      - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}
       - --region
       - ${_REGION}
       - --platform
@@ -26,12 +29,12 @@ steps:
       - --allow-unauthenticated
 
 images:
-  - ${_IMAGE_URI}
+  - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${COMMIT_SHA}
 
 substitutions:
   _SERVICE_NAME: credit-card-rag-app
   _REGION: us-central1
-  _IMAGE_URI: us-central1-docker.pkg.dev/$PROJECT_ID/cloud-run-source-deploy/credit-card-rag-app:${SHORT_SHA}
+  _REPO_NAME: cloud-run-source-deploy
 
 options:
   logging: CLOUD_LOGGING_ONLY
