@@ -24,6 +24,8 @@ steps:
       - ${_REGION}-docker.pkg.dev/${PROJECT_ID}/${_REPO_NAME}/${_SERVICE_NAME}:${_IMAGE_TAG}
       - --region
       - ${_REGION}
+      - --service-account
+      - ${_RUNTIME_SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
       - --platform
       - managed
       - --allow-unauthenticated
@@ -36,6 +38,7 @@ substitutions:
   _REGION: us-central1
   _REPO_NAME: my-streamlit-repo
   _IMAGE_TAG: latest
+  _RUNTIME_SA_NAME: cloud-run-rag-sa
 
 options:
   logging: CLOUD_LOGGING_ONLY
