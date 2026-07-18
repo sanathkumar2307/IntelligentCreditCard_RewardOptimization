@@ -128,7 +128,7 @@ def query_rag_database_with_query(sql_query, query_params=None):
             conn.close()
 
 
-def get_matching_chunks(user_query, limit=3):
+def get_matching_chunks(user_query, limit=5):
     """
     Main function to retrieve the most relevant context chunks for a given user query.
     Returns a list of structured metadata for each matched chunk.
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     # # 4. Extract matched context blocks from Cloud SQL
     # matched_contexts = query_rag_database(query_vector, limit=3)
 
-    matched_contexts = get_matching_chunks(user_query, limit=3)
+    matched_contexts = get_matching_chunks(user_query, limit=5)
     
     # 5. Output the structured metadata details cleanly
     print(f"\n🚀 Found {len(matched_contexts)} highly relevant context chunks:\n")
