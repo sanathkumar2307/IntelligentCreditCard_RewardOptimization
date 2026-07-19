@@ -2,6 +2,11 @@ import streamlit as st
 from rag_retrieval_langchain import final_chain
 import time
 import traceback
+import logging
+
+
+logger = logging.getLogger("chatbot_app")
+logger.info("Streamlit script execution started")
 
 # Page configuration
 st.set_page_config(
@@ -66,6 +71,7 @@ with col1:
     )
 
 if user_input:
+    logger.info("User submitted query", extra={"query_length": len(user_input)})
     # Add user message to history
     st.session_state.messages.append({
         "role": "user",
@@ -83,8 +89,15 @@ if user_input:
         try:
             # Show loading state
             with st.spinner("Thinking..."):
+                logger.info("Invoking final_chain")
+                start_time = time.time()
                 # Invoke the RAG chain
                 response = final_chain.invoke(user_input)
+                elapsed = round(time.time() - start_time, 3)
+                logger.info(
+                    "final_chain completed",
+                    extra={"duration_seconds": elapsed, "response_length": len(str(response))},
+                )
                 
                 # Display the response
                 message_placeholder.markdown(response)
@@ -98,6 +111,7 @@ if user_input:
         except Exception as e:
             # Emit full traceback to server logs (Cloud Run) for debugging.
             traceback.print_exc()
+            logger.exception("Query processing failed")
             error_message = f"⚠️ An error occurred: {str(e)}"
             message_placeholder.markdown(error_message)
             st.session_state.messages.append({

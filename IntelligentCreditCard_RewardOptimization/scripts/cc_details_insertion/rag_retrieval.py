@@ -17,6 +17,10 @@ db_name = os.environ.get("DB_NAME") or "postgres"
 db_user = os.environ.get("DB_USER") or "postgres"
 db_pass = os.environ.get("DB_PASS") or "rag123"
 
+# Fail fast in cloud environments instead of hanging websocket sessions.
+DB_CONNECT_TIMEOUT_SECONDS = int(os.environ.get("DB_CONNECT_TIMEOUT", "10"))
+DB_STATEMENT_TIMEOUT_MS = int(os.environ.get("DB_STATEMENT_TIMEOUT_MS", "30000"))
+
 
 def generate_query_embedding(project_id, location, query_text):
     """Converts the user's question into a 768-dimension semantic vector."""
@@ -36,14 +40,8 @@ def query_rag_database(query_vector, limit=5):
     Queries Cloud SQL using Cosine Distance (<=>) to find the top matching chunks.
     Calculates exact Cosine Similarity from the Cosine Distance layer.
     """
-    conn = psycopg2.connect(
-        host=db_host,
-        database=db_name,
-        user=db_user,
-        password=db_pass,
-        port="5432"
-    )
-    cursor = conn.cursor()
+    conn = None
+    cursor = None
     
     # 1 - (embedding <=> %s) converts cosine distance directly into absolute similarity %
     search_sql = """
@@ -64,6 +62,17 @@ def query_rag_database(query_vector, limit=5):
     
     results = []
     try:
+        conn = psycopg2.connect(
+            host=db_host,
+            database=db_name,
+            user=db_user,
+            password=db_pass,
+            port="5432",
+            connect_timeout=DB_CONNECT_TIMEOUT_SECONDS
+        )
+        cursor = conn.cursor()
+        cursor.execute(f"SET statement_timeout = {DB_STATEMENT_TIMEOUT_MS};")
+
         # Pass the query vector twice: once for the similarity calculation, once for sorting
         cursor.execute(search_sql, (query_vector, query_vector, limit))
         rows = cursor.fetchall()
@@ -82,9 +91,14 @@ def query_rag_database(query_vector, limit=5):
             })
     except Exception as e:
         print(f"Database retrieval failed: {e}")
+        raise RuntimeError(
+            f"Database retrieval failed (host={db_host}, connect_timeout={DB_CONNECT_TIMEOUT_SECONDS}s): {e}"
+        ) from e
     finally:
-        cursor.close()
-        conn.close()
+        if cursor is not None:
+            cursor.close()
+        if conn is not None:
+            conn.close()
         
     return results
 
@@ -114,9 +128,11 @@ def query_rag_database_with_query(sql_query, query_params=None):
             database=db_name,
             user=db_user,
             password=db_pass,
-            port="5432"
+            port="5432",
+            connect_timeout=DB_CONNECT_TIMEOUT_SECONDS
         )
         with conn.cursor(cursor_factory=RealDictCursor) as cursor:
+            cursor.execute(f"SET statement_timeout = {DB_STATEMENT_TIMEOUT_MS};")
             cursor.execute(sql_query, query_params)
             rows = cursor.fetchall()
             return [dict(row) for row in rows]

@@ -53,4 +53,6 @@ langchain-text-splitters==0.2.1
 # PostgreSQL Database Driver (Native Python interface for pgvector interaction)
 psycopg2-binary==2.9.9
 
+# Computer Vision & PyTorch
+torchvision
 

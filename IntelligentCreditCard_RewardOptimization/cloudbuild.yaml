@@ -30,6 +30,16 @@ steps:
       - ${_RUNTIME_SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
       - --set-secrets
       - OPENAI_API_KEY=${_OPENAI_SECRET}:latest
+      - --set-env-vars
+      - LOG_LEVEL=DEBUG
+      - --memory
+      - 2Gi
+      - --cpu
+      - "2"
+      - --concurrency
+      - "20"
+      - --timeout
+      - "900"
       - --platform
       - managed
       - --allow-unauthenticated
