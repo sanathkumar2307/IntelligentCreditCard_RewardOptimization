@@ -35,7 +35,7 @@ def generate_query_embedding(project_id, location, query_text):
     embeddings = model.get_embeddings([query_text])
     return embeddings[0].values
 
-def query_rag_database(query_vector, limit=5):
+def query_rag_database(query_vector, limit=5, card_name=None, bank_name=None):
     """
     Queries Cloud SQL using Cosine Distance (<=>) to find the top matching chunks.
     Calculates exact Cosine Similarity from the Cosine Distance layer.
@@ -56,6 +56,8 @@ def query_rag_database(query_vector, limit=5):
         chunk_text,
         1 - (embedding <=> %s::vector) AS cosine_similarity
     FROM cc_reward_chunks
+    WHERE (%s IS NULL OR card_name = %s)
+      AND (%s IS NULL OR issuer = %s)
     ORDER BY embedding <=> %s::vector
     LIMIT %s;
     """
@@ -73,8 +75,8 @@ def query_rag_database(query_vector, limit=5):
         cursor = conn.cursor()
         cursor.execute(f"SET statement_timeout = {DB_STATEMENT_TIMEOUT_MS};")
 
-        # Pass the query vector twice: once for the similarity calculation, once for sorting
-        cursor.execute(search_sql, (query_vector, query_vector, limit))
+        # Pass parameters in correct order: query_vector, card_name filters, bank_name filters, query_vector for sorting, limit
+        cursor.execute(search_sql, (query_vector, card_name, card_name, bank_name, bank_name, query_vector, limit))
         rows = cursor.fetchall()
         
         for row in rows:
@@ -144,7 +146,7 @@ def query_rag_database_with_query(sql_query, query_params=None):
             conn.close()
 
 
-def get_matching_chunks(user_query, limit=5):
+def get_matching_chunks(user_query, limit=5, card_name=None, bank_name=None):
     """
     Main function to retrieve the most relevant context chunks for a given user query.
     Returns a list of structured metadata for each matched chunk.
@@ -153,7 +155,7 @@ def get_matching_chunks(user_query, limit=5):
     query_vector = generate_query_embedding(project_id, location, user_query)
     
     # 2. Query the database for top matching chunks
-    matched_chunks = query_rag_database(query_vector, limit=limit)
+    matched_chunks = query_rag_database(query_vector, limit=limit, card_name=card_name, bank_name=bank_name)
     
     return matched_chunks
 
@@ -180,7 +182,7 @@ if __name__ == "__main__":
     # # 4. Extract matched context blocks from Cloud SQL
     # matched_contexts = query_rag_database(query_vector, limit=3)
 
-    matched_contexts = get_matching_chunks(user_query, limit=5)
+    matched_contexts = get_matching_chunks(user_query, limit=5, card_name=None, bank_name=None)
     
     # 5. Output the structured metadata details cleanly
     print(f"\n🚀 Found {len(matched_contexts)} highly relevant context chunks:\n")
